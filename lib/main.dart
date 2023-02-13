@@ -1,4 +1,3 @@
-import 'package:device_preview/device_preview.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,7 +9,7 @@ import '../../presentation%20layer/constants/constants.dart';
 import '../../presentation%20layer/screens/categories_screen.dart';
 import '../../presentation%20layer/screens/home_screen.dart';
 import '../../presentation%20layer/screens/login_screen.dart';
-import '../../presentation%20layer/screens/onBoarding_screen.dart';
+import '../../presentation%20layer/screens/on_boarding_screen.dart';
 import '../../presentation%20layer/screens/profile_screen.dart';
 import '../../presentation%20layer/screens/register_screen.dart';
 import '../../presentation%20layer/screens/search_screen.dart';
@@ -89,7 +88,6 @@ class MyApp extends StatelessWidget {
             minTextAdapt: true,
             splitScreenMode: true,
             builder: (context, _) => MaterialApp(
-              builder: DevicePreview.appBuilder,
               debugShowCheckedModeBanner: false,
               themeMode: cubit.tm,
               theme: Themes.light,

@@ -35,6 +35,7 @@ class FavoritesScreen extends StatelessWidget {
                   itemCount: cubit.favoritesModels!.data!.data!.length,
                   itemBuilder: (context, index) => FavoriteProductItem(
                     product: cubit.favoritesModels!.data!.data![index].product!,
+                    position: index,
                   ),
                 ),
         );

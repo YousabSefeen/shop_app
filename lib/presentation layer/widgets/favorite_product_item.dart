@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../../Business%20Logic%20Layer/cubits/cubit_theme_bottom_na.dart';
 
 import '../../Business%20Logic%20Layer/states/state_shop_app.dart';
@@ -13,8 +14,10 @@ import '../../Business Logic Layer/cubits/cubit_shop_app.dart';
 
 class FavoriteProductItem extends StatelessWidget {
   final FavoriteSingleProductModel product;
+  final int position;
 
-  const FavoriteProductItem({Key? key, required this.product})
+  const FavoriteProductItem(
+      {Key? key, required this.product, required this.position})
       : super(key: key);
 
   @override
@@ -24,124 +27,136 @@ class FavoriteProductItem extends StatelessWidget {
     bool isDark = ThemeAndBNCubit.getObject(context).tm == ThemeMode.dark;
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 15.h, horizontal: 25.w),
-      child: InkWell(
-        onTap: () {
-          Navigator.of(context)
-              .pushNamed(ProductDetails.route, arguments: product.id);
-        },
-        child: Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(30.r),
-              bottomRight: Radius.circular(30.r),
-            ),
-            side: BorderSide(
-              color: isDark ? Colors.white70 : Colors.white,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Stack(
-                alignment: Alignment.topLeft,
-                children: [
-                  CachedNetworkImage(
-                    imageUrl: product.image!,
-                    placeholder: (ctx, s) =>
-                        Image.asset('assets/images/loading.gif'),
-                    errorWidget: (ctx, s, _) =>
-                        Image.asset('assets/images/imageError.png'),
-                    width: double.infinity,
-                    height: deviceSize.height * 0.2,
-                    fit: BoxFit.fill,
+      child: AnimationConfiguration.staggeredList(
+        position: position,
+        duration: const Duration(seconds: 1),
+        child: SlideAnimation(
+          horizontalOffset: 300,
+          child: FadeInAnimation(
+            child: InkWell(
+              onTap: () {
+                Navigator.of(context)
+                    .pushNamed(ProductDetails.route, arguments: product.id);
+              },
+              child: Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(30.r),
+                    bottomRight: Radius.circular(30.r),
                   ),
-                  if (product.discount != 0)
-                    Container(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 5.h, horizontal: 6.w),
-                      color: Colors.red,
-                      child: RichText(
-                        text: TextSpan(
-                          text: 'Discount ',
-                          style: textContext.labelSmall,
-                          children: <TextSpan>[
-                            TextSpan(
-                              text: '${product.discount}%',
-                              style: textContext.labelMedium,
+                  side: BorderSide(
+                    color: isDark ? Colors.white70 : Colors.white,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Stack(
+                      alignment: Alignment.topLeft,
+                      children: [
+                        CachedNetworkImage(
+                          imageUrl: product.image!,
+                          placeholder: (ctx, s) =>
+                              Image.asset('assets/images/loading.gif'),
+                          errorWidget: (ctx, s, _) =>
+                              Image.asset('assets/images/imageError.png'),
+                          width: double.infinity,
+                          height: deviceSize.height * 0.2,
+                          fit: BoxFit.fill,
+                        ),
+                        if (product.discount != 0)
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 5.h, horizontal: 6.w),
+                            color: Colors.red,
+                            child: RichText(
+                              text: TextSpan(
+                                text: 'Discount ',
+                                style: textContext.labelSmall,
+                                children: <TextSpan>[
+                                  TextSpan(
+                                    text: '${product.discount}%',
+                                    style: textContext.labelMedium,
+                                  ),
+                                ],
+                              ),
                             ),
+                          )
+                      ],
+                    ),
+                    Padding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 8.h, horizontal: 8.w),
+                      child: Text(
+                        product.name!,
+                        style: textContext.titleSmall,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Chip(
+                              label: Text(
+                                product.price.toString(),
+                                style: textContext.labelLarge,
+                              ),
+                            ),
+                            if (product.discount != 0)
+                              Padding(
+                                padding:
+                                    EdgeInsets.only(bottom: 5.0.h, left: 5.w),
+                                child: Text(
+                                  product.oldPrice.toString(),
+                                  style: textContext.bodyMedium,
+                                ),
+                              ),
                           ],
                         ),
-                      ),
-                    )
-                ],
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 8.w),
-                child: Text(
-                  product.name!,
-                  style: textContext.titleSmall,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
+                        BlocConsumer<ShopAppCubit, ShopAppStates>(
+                          listener: (context, state) {
+                            if (state is ChangeFavoritesSuccessState) {
+                              if (state.favoritesMode.status!) {
+                                buildSnackBar(
+                                  context: context,
+                                  message: state.favoritesMode.message!,
+                                  textColor: Colors.white,
+                                );
+                              } else {
+                                buildSnackBar(
+                                  context: context,
+                                  message: state.favoritesMode.message!,
+                                  textColor: Colors.red,
+                                );
+                              }
+                            }
+                          },
+                          builder: (context, state) {
+                            ShopAppCubit cubit =
+                                ShopAppCubit.getObject(context);
+                            return IconButton(
+                              onPressed: () {
+                                cubit.changeFavorite(product.id!);
+                              },
+                              icon: Icon(
+                                Icons.favorite,
+                                size: 30.h,
+                                color: Colors.amber,
+                              ),
+                            );
+                          },
+                        )
+                      ],
+                    ),
+                    SizedBox(height: 5.h),
+                  ],
                 ),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Chip(
-                        label: Text(
-                          product.price.toString(),
-                          style: textContext.labelLarge,
-                        ),
-                      ),
-                      if (product.discount != 0)
-                        Padding(
-                          padding: EdgeInsets.only(bottom: 5.0.h, left: 5.w),
-                          child: Text(
-                            product.oldPrice.toString(),
-                            style: textContext.bodyMedium,
-                          ),
-                        ),
-                    ],
-                  ),
-                  BlocConsumer<ShopAppCubit, ShopAppStates>(
-                    listener: (context, state) {
-                      if (state is ChangeFavoritesSuccessState) {
-                        if (state.favoritesMode.status!) {
-                          buildSnackBar(
-                            context: context,
-                            message: state.favoritesMode.message!,
-                            textColor: Colors.white,
-                          );
-                        } else {
-                          buildSnackBar(
-                            context: context,
-                            message: state.favoritesMode.message!,
-                            textColor: Colors.red,
-                          );
-                        }
-                      }
-                    },
-                    builder: (context, state) {
-                      ShopAppCubit cubit = ShopAppCubit.getObject(context);
-                      return IconButton(
-                        onPressed: () {
-                          cubit.changeFavorite(product.id!);
-                        },
-                        icon: Icon(
-                          Icons.favorite,
-                          size: 30.h,
-                          color: Colors.amber,
-                        ),
-                      );
-                    },
-                  )
-                ],
-              ),
-              SizedBox(height: 5.h),
-            ],
+            ),
           ),
         ),
       ),
