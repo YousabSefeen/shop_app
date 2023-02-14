@@ -8,14 +8,9 @@ import '../../presentation%20layer/screens/theme_screen.dart';
 import '../screens/categories_screen.dart';
 import '../screens/login_screen.dart';
 
-class MyDrawer extends StatefulWidget {
+class MyDrawer extends StatelessWidget {
   const MyDrawer({Key? key}) : super(key: key);
 
-  @override
-  State<MyDrawer> createState() => _MyDrawerState();
-}
-
-class _MyDrawerState extends State<MyDrawer> {
   @override
   Widget build(BuildContext context) {
     bool isDark = ThemeAndBNCubit.getObject(context).tm == ThemeMode.dark;
